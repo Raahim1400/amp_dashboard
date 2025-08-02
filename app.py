@@ -2,8 +2,18 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# Load CSV data
-df = pd.read_csv('data/amp_scores.csv')
+# Title
+st.title('AMP Score Dashboard')
+
+# File uploader
+uploaded_file = st.sidebar.file_uploader("Upload AMP Data CSV", type=['csv'])
+
+if uploaded_file is not None:
+    df = pd.read_csv(uploaded_file)
+    st.success("Uploaded file loaded successfully!")
+else:
+    df = pd.read_csv('data/amp_scores.csv')
+    st.info("Using default data (amp_scores.csv)")
 
 # AI-style AMP prediction logic
 def predict_amp_category(score):
@@ -16,9 +26,6 @@ def predict_amp_category(score):
 
 # Apply prediction
 df["Predicted Category"] = df["AMP Score"].apply(predict_amp_category)
-
-# Streamlit app layout
-st.title('AMP Score Dashboard')
 
 # Sidebar filters
 st.sidebar.header("Filter Options")
@@ -45,4 +52,5 @@ ax.set_xlabel('Plant')
 ax.set_ylabel('AMP Score')
 ax.set_title('AMP Score Comparison')
 st.pyplot(fig)
+
 
