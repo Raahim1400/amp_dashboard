@@ -57,25 +57,22 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- MAIN CONTENT ---
 st.markdown("""
     <h1 style='text-align: center;'>🔬 AMP Score Dashboard</h1>
     <div style='text-align: center; font-size: 18px; color: #aaa;'>
-        Welcome to the AMP Score Dashboard! This futuristic dashboard displays Antimicrobial Peptide (AMP) scores from local medicinal plants.<br>
+        Welcome to the AMP Score Dashboard! This dashboard displays Antimicrobial Peptide (AMP) scores from local medicinal plants.<br>
         <b>How to Use:</b><br>
         • Use the sidebar to filter by plant and AMP score.<br>
         • Explore the table and graph below.
     </div>
 """, unsafe_allow_html=True)
 
-# --- TABLE ---
-st.markdown("### 📄 Filtered AMP Data")
+st.markdown("### Filtered AMP Data")
 st.dataframe(filtered_df, use_container_width=True)
 
-# --- CHART ---
-st.markdown("### 🌉 AMP Score per Plant")
+st.markdown("###  AMP Score per Plant")
 fig, ax = plt.subplots(figsize=(10, 4))
-ax.bar(filtered_df['Plant'], filtered_df['AMP Score'], color='#03a9f4')  # blue accent
+ax.bar(filtered_df['Plant'], filtered_df['AMP Score'], color='#03a9f4')  
 ax.set_xlabel("Plant", fontsize=12)
 ax.set_ylabel("AMP Score", fontsize=12)
 ax.set_title("AMP Score Comparison", fontsize=14, color='white')
