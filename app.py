@@ -2,69 +2,68 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 
-st.set_page_config(page_title="AMP Dashboard", layout="centered")
-st.title('🧬 Antimicrobial Peptide (AMP) Dashboard')
+# Load the data
+@st.cache_data
+def load_data():
+    return pd.read_csv("data/amp_scores.csv")
 
+df = load_data()
+
+# App Title
+st.title("🧬 AMP Score Dashboard")
+
+# Intro Instructions
 st.markdown("""
-**How to use this dashboard:**  
-- Upload your AMP data or use the default dataset.  
-- Use filters in the sidebar to select specific plants and AMP score thresholds.  
-- Results will show in the table and chart below.  
+Welcome to the **AMP Score Dashboard**!  
+This app helps visualize and filter Antimicrobial Peptide (AMP) scores extracted from local medicinal plants.
+
+**How to Use:**
+- Use the sidebar to filter by plant name and AMP Score range.
+- View filtered data in the table and graph.
+- Download filtered results for your records.
 """)
 
+# Sidebar Filters
+st.sidebar.header("🔍 Filter Options")
+
+# Plant Multiselect
 plants = st.sidebar.multiselect(
-    "Select plant(s):",
-    options=df['Plant'].unique(),
-    default=df['Plant'].unique(),
-    help="Choose one or more medicinal plant(s)"
+    "Select Plant(s):",
+    options=df["Plant"].unique(),
+    default=df["Plant"].unique(),
+    help="Choose one or more medicinal plants to view"
 )
 
+# AMP Score Range Slider
+min_score = float(df["AMP Score"].min())
+max_score = float(df["AMP Score"].max())
 
-uploaded_file = st.sidebar.file_uploader("📤 Upload AMP Data CSV", type=['csv'])
-
-if uploaded_file is not None:
-    df = pd.read_csv(uploaded_file)
-    st.success("✅ Uploaded file loaded successfully!")
-else:
-    df = pd.read_csv('data/amp_scores.csv')
-    st.info("ℹ️ Using default dataset (amp_scores.csv)")
-
-def predict_amp_category(score):
-    if score > 85:
-        return "High"
-    elif score >= 70:
-        return "Moderate"
-    else:
-        return "Low"
-
-df["Predicted Category"] = df["AMP Score"].apply(predict_amp_category)
-
-st.sidebar.header("🔎 Filter Options")
-plants = st.sidebar.multiselect("🌿 Select plant(s):", options=df['Plant'].unique(), default=df['Plant'].unique())
-
-score_min, score_max = float(df['AMP Score'].min()), float(df['AMP Score'].max())
-score_range = st.sidebar.slider("📊 Minimum AMP Score:", min_value=score_min, max_value=score_max, value=score_min)
-
-filtered_df = df[(df['Plant'].isin(plants)) & (df['AMP Score'] >= score_range)]
-
-st.markdown("### 📋 Filtered AMP Scores with Prediction")
-st.dataframe(filtered_df[['Plant', 'AMP Score', 'Predicted Category']], use_container_width=True)
-
-csv = filtered_df.to_csv(index=False).encode('utf-8')
-st.download_button(
-    label="⬇️ Download Filtered Data as CSV",
-    data=csv,
-    file_name='filtered_amp_scores.csv',
-    mime='text/csv'
+score_range = st.sidebar.slider(
+    "Select AMP Score Range:",
+    min_value=min_score,
+    max_value=max_score,
+    value=(min_score, max_score),
+    step=0.1,
+    help="Filter plants between selected AMP Score range"
 )
 
-st.markdown("### 📈 AMP Score per Plant")
+# Apply filters
+filtered_df = df[
+    (df["Plant"].isin(plants)) &
+    (df["AMP Score"] >= score_range[0]) &
+    (df["AMP Score"] <= score_range[1])
+]
+
+# Show Filtered Table
+st.subheader("📋 Filtered AMP Data")
+st.dataframe(filtered_df)
+
+# Show Bar Chart
+st.subheader("📊 AMP Score per Plant")
 fig, ax = plt.subplots()
-ax.bar(filtered_df['Plant'], filtered_df['AMP Score'], color='seagreen')
-ax.set_xlabel('Plant')
-ax.set_ylabel('AMP Score')
-ax.set_title('AMP Score Comparison')
+ax.bar(filtered_df["Plant"], filtered_df["AMP Score"], color="seagreen")
+ax.set_xlabel("Plant")
+ax.set_ylabel("AMP Score")
+ax.set_title("AMP Score Comparison")
 st.pyplot(fig)
 
-st.markdown("---")
-st.markdown("📘 *This dashboard is part of the AMP Screening Project (Biotech x AI)*")
