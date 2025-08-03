@@ -5,6 +5,21 @@ import matplotlib.pyplot as plt
 st.set_page_config(page_title="AMP Dashboard", layout="centered")
 st.title('🧬 Antimicrobial Peptide (AMP) Dashboard')
 
+st.markdown("""
+**How to use this dashboard:**  
+- Upload your AMP data or use the default dataset.  
+- Use filters in the sidebar to select specific plants and AMP score thresholds.  
+- Results will show in the table and chart below.  
+""")
+
+plants = st.sidebar.multiselect(
+    "Select plant(s):",
+    options=df['Plant'].unique(),
+    default=df['Plant'].unique(),
+    help="Choose one or more medicinal plant(s)"
+)
+
+
 uploaded_file = st.sidebar.file_uploader("📤 Upload AMP Data CSV", type=['csv'])
 
 if uploaded_file is not None:
