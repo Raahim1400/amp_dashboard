@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 
+# Page config
 st.set_page_config(
     page_title="AMP Score Dashboard",
     page_icon="🧬",
@@ -9,9 +10,19 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-df = pd.read_csv("data/amp_scores.csv")
+# --- FILE UPLOAD ---
+st.sidebar.markdown("### 📤 Upload Your AMP Data (.csv)")
+user_file = st.sidebar.file_uploader("Upload CSV", type=["csv"])
 
-st.sidebar.markdown("##  Filter Options")
+if user_file is not None:
+    df = pd.read_csv(user_file)
+    st.success("✅ Custom data uploaded successfully!")
+else:
+    df = pd.read_csv("data/amp_scores.csv")
+    st.info("ℹ️ Using default AMP data (data/amp_scores.csv)")
+
+# --- SIDEBAR FILTERS ---
+st.sidebar.markdown("## ✨ Filter Options")
 
 plants = st.sidebar.multiselect(
     "Select Plant(s):", options=df["Plant"].unique(), default=df["Plant"].unique()
@@ -24,13 +35,14 @@ score_range = st.sidebar.slider(
     value=(int(df["AMP Score"].min()), int(df["AMP Score"].max()))
 )
 
-
+# Filtered data
 filtered_df = df[
     (df["Plant"].isin(plants)) &
     (df["AMP Score"] >= score_range[0]) &
     (df["AMP Score"] <= score_range[1])
 ]
 
+# --- STYLING ---
 st.markdown("""
     <style>
         body {
@@ -53,22 +65,26 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# --- MAIN CONTENT ---
 st.markdown("""
-    <h1 style='text-align: center;'> AMP Score Dashboard</h1>
+    <h1 style='text-align: center;'>🔬 AMP Score Dashboard</h1>
     <div style='text-align: center; font-size: 18px; color: #aaa;'>
-        Welcome to the AMP Score Dashboard! This dashboard displays Antimicrobial Peptide (AMP) scores from local medicinal plants.<br>
+        Welcome to the AMP Score Dashboard! This futuristic dashboard displays Antimicrobial Peptide (AMP) scores from local medicinal plants.<br>
         <b>How to Use:</b><br>
-        • Use the sidebar to filter by plant and AMP score.<br>
-        • Explore the table and graph below.
+        • Upload your own CSV file (optional)<br>
+        • Use the sidebar to filter by plant and AMP score<br>
+        • Explore the table, graph, and download options below
     </div>
 """, unsafe_allow_html=True)
 
-st.markdown("### Filtered AMP Data")
+# --- TABLE ---
+st.markdown("### 📄 Filtered AMP Data")
 st.dataframe(filtered_df, use_container_width=True)
 
-st.markdown("###  AMP Score per Plant")
+# --- CHART ---
+st.markdown("### 🌉 AMP Score per Plant")
 fig, ax = plt.subplots(figsize=(10, 4))
-ax.bar(filtered_df['Plant'], filtered_df['AMP Score'], color='#03a9f4')  
+ax.bar(filtered_df['Plant'], filtered_df['AMP Score'], color='#03a9f4')  # blue accent
 ax.set_xlabel("Plant", fontsize=12)
 ax.set_ylabel("AMP Score", fontsize=12)
 ax.set_title("AMP Score Comparison", fontsize=14, color='white')
@@ -77,7 +93,8 @@ fig.patch.set_facecolor('#111')
 ax.set_facecolor('#222')
 st.pyplot(fig)
 
-st.markdown("### ⬇ Download Filtered Data")
+# --- DOWNLOAD BUTTON ---
+st.markdown("### ⬇️ Download Filtered Data")
 csv = filtered_df.to_csv(index=False).encode('utf-8')
 
 st.download_button(
