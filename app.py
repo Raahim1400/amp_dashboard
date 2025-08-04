@@ -99,6 +99,45 @@ fig.patch.set_facecolor('#111')
 ax.set_facecolor('#222')
 st.pyplot(fig)
 
+# --- PIE CHART ---
+st.markdown("### 🧁 AMP Category Distribution")
+
+category_counts = filtered_df['Predicted Category'].value_counts()
+fig2, ax2 = plt.subplots()
+colors = ['#f44336', '#ff9800', '#4caf50']  # red, orange, green
+
+ax2.pie(
+    category_counts,
+    labels=category_counts.index,
+    autopct='%1.1f%%',
+    startangle=90,
+    colors=colors,
+    textprops={'color': 'white'}
+)
+ax2.axis('equal')
+fig2.patch.set_facecolor('#111')
+st.pyplot(fig2)
+
+# --- SUMMARY REPORT ---
+st.markdown("### 📋 Summary Report")
+
+if not filtered_df.empty:
+    best_plant = filtered_df.sort_values('AMP Score', ascending=False).iloc[0]['Plant']
+    avg_score = round(filtered_df['AMP Score'].mean(), 2)
+    high_count = (filtered_df['Predicted Category'] == 'High AMP').sum()
+    mod_count = (filtered_df['Predicted Category'] == 'Moderate AMP').sum()
+    low_count = (filtered_df['Predicted Category'] == 'Low AMP').sum()
+
+    st.markdown(f\"\"\"
+    - 🥇 **Best Performing Plant**: `{best_plant}`
+    - 📊 **Average AMP Score**: `{avg_score}`
+    - 🧬 **High AMP**: {high_count} plant(s)  
+    - 🌿 **Moderate AMP**: {mod_count} plant(s)  
+    - 🌫️ **Low AMP**: {low_count} plant(s)
+    \"\"\")
+else:
+    st.info(\"No data available for summary.\")
+
 st.markdown("### ⬇️ Download Filtered Data")
 csv = filtered_df.to_csv(index=False).encode('utf-8')
 
