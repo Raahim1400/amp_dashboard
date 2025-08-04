@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# Page config
 st.set_page_config(
     page_title="AMP Score Dashboard",
     page_icon="🧬",
@@ -10,11 +9,9 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Load data
 df = pd.read_csv("data/amp_scores.csv")
 
-# --- SIDEBAR FILTERS ---
-st.sidebar.markdown("## ✨ Filter Options")
+st.sidebar.markdown("##  Filter Options")
 
 plants = st.sidebar.multiselect(
     "Select Plant(s):", options=df["Plant"].unique(), default=df["Plant"].unique()
@@ -27,14 +24,13 @@ score_range = st.sidebar.slider(
     value=(int(df["AMP Score"].min()), int(df["AMP Score"].max()))
 )
 
-# Filtered data
+
 filtered_df = df[
     (df["Plant"].isin(plants)) &
     (df["AMP Score"] >= score_range[0]) &
     (df["AMP Score"] <= score_range[1])
 ]
 
-# --- STYLING ---
 st.markdown("""
     <style>
         body {
@@ -58,7 +54,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.markdown("""
-    <h1 style='text-align: center;'>🔬 AMP Score Dashboard</h1>
+    <h1 style='text-align: center;'> AMP Score Dashboard</h1>
     <div style='text-align: center; font-size: 18px; color: #aaa;'>
         Welcome to the AMP Score Dashboard! This dashboard displays Antimicrobial Peptide (AMP) scores from local medicinal plants.<br>
         <b>How to Use:</b><br>
@@ -80,3 +76,14 @@ ax.tick_params(colors='white')
 fig.patch.set_facecolor('#111')
 ax.set_facecolor('#222')
 st.pyplot(fig)
+
+st.markdown("### ⬇ Download Filtered Data")
+csv = filtered_df.to_csv(index=False).encode('utf-8')
+
+st.download_button(
+    label="Download CSV",
+    data=csv,
+    file_name='filtered_amp_data.csv',
+    mime='text/csv',
+    help="Click to download the current table as CSV"
+)
