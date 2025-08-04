@@ -63,15 +63,15 @@ st.markdown("""
         .block-container {
             padding-top: 2rem;
         }
-        .css-1d391kg { 
-            background-color: #111 !important; 
-        }
         h1, h2, h3, h4 {
             color: #e91e63;
         }
         .st-emotion-cache-10trblm {
-            font-size: 1.3rem;
+            font-size: 1.4rem;
             color: #9cf;
+        }
+        .markdown-text-container, .stMarkdown, .stTable, .stDataFrame {
+            font-size: 1.2rem !important;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -79,7 +79,7 @@ st.markdown("""
 # --- MAIN CONTENT ---
 st.markdown("""
     <h1 style='text-align: center;'>🔬 AMP Score Dashboard</h1>
-    <div style='text-align: center; font-size: 18px; color: #aaa;'>
+    <div style='text-align: center; font-size: 20px; color: #aaa;'>
         Welcome to the AMP Score Dashboard! This futuristic dashboard displays Antimicrobial Peptide (AMP) scores from local medicinal plants.<br>
         <b>How to Use:</b><br>
         • Upload your own CSV file (optional)<br>
@@ -116,7 +116,7 @@ ax2.pie(
     autopct='%1.1f%%',
     startangle=90,
     colors=colors,
-    textprops={'color': 'white'}
+    textprops={'color': 'white', 'fontsize': 14}
 )
 ax2.axis('equal')
 fig2.patch.set_facecolor('#111')
@@ -133,12 +133,14 @@ if not filtered_df.empty:
     low_count = (filtered_df['Predicted Category'] == 'Low AMP').sum()
 
     st.markdown(f"""
-    - 🥇 **Best Performing Plant**: `{best_plant}`
-    - 📊 **Average AMP Score**: `{avg_score}`
-    - 🧬 **High AMP**: {high_count} plant(s)  
-    - 🌿 **Moderate AMP**: {mod_count} plant(s)  
-    - 🌫️ **Low AMP**: {low_count} plant(s)
-    """)
+    <div style='font-size: 18px;'>
+    - 🥇 <b>Best Performing Plant</b>: <code>{best_plant}</code><br>
+    - 📊 <b>Average AMP Score</b>: <code>{avg_score}</code><br>
+    - 🧬 <b>High AMP</b>: {high_count} plant(s)<br>
+    - 🌿 <b>Moderate AMP</b>: {mod_count} plant(s)<br>
+    - 🌫️ <b>Low AMP</b>: {low_count} plant(s)
+    </div>
+    """, unsafe_allow_html=True)
 else:
     st.info("No data available for summary.")
 
