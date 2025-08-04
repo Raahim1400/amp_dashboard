@@ -16,12 +16,13 @@ user_file = st.sidebar.file_uploader("Upload CSV", type=["csv"])
 
 if user_file is not None:
     df = pd.read_csv(user_file)
-    st.success(" Custom data uploaded successfully!")
+    st.success("✅ Custom data uploaded successfully!")
 else:
     df = pd.read_csv("data/amp_scores.csv")
-    st.info("ℹ Using default AMP data (data/amp_scores.csv)")
+    st.info("ℹ️ Using default AMP data (data/amp_scores.csv)")
 
-st.sidebar.markdown("##  Filter Options")
+# --- SIDEBAR FILTERS ---
+st.sidebar.markdown("## ✨ Filter Options")
 
 plants = st.sidebar.multiselect(
     "Select Plant(s):", options=df["Plant"].unique(), default=df["Plant"].unique()
@@ -34,12 +35,14 @@ score_range = st.sidebar.slider(
     value=(int(df["AMP Score"].min()), int(df["AMP Score"].max()))
 )
 
+# Filtered data
 filtered_df = df[
     (df["Plant"].isin(plants)) &
     (df["AMP Score"] >= score_range[0]) &
     (df["AMP Score"] <= score_range[1])
 ]
 
+# --- AMP Category Predictor ---
 def predict_category(score):
     if score >= 80:
         return 'High AMP'
@@ -64,7 +67,7 @@ st.markdown("""
             background-color: #111 !important; 
         }
         h1, h2, h3, h4 {
-            color: #e91e63;  /* red-pink accent */
+            color: #e91e63;
         }
         .st-emotion-cache-10trblm {
             font-size: 1.3rem;
@@ -73,6 +76,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# --- MAIN CONTENT ---
 st.markdown("""
     <h1 style='text-align: center;'>🔬 AMP Score Dashboard</h1>
     <div style='text-align: center; font-size: 18px; color: #aaa;'>
@@ -84,13 +88,14 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-st.markdown("###  Filtered AMP Data")
+# --- TABLE ---
+st.markdown("### 📄 Filtered AMP Data")
 st.dataframe(filtered_df[['Plant', 'AMP Score', 'Predicted Category']], use_container_width=True)
 
-
-st.markdown("###  AMP Score per Plant")
+# --- BAR CHART ---
+st.markdown("### 🌉 AMP Score per Plant")
 fig, ax = plt.subplots(figsize=(10, 4))
-ax.bar(filtered_df['Plant'], filtered_df['AMP Score'], color='#03a9f4')  # blue accent
+ax.bar(filtered_df['Plant'], filtered_df['AMP Score'], color='#03a9f4')
 ax.set_xlabel("Plant", fontsize=12)
 ax.set_ylabel("AMP Score", fontsize=12)
 ax.set_title("AMP Score Comparison", fontsize=14, color='white')
@@ -101,10 +106,9 @@ st.pyplot(fig)
 
 # --- PIE CHART ---
 st.markdown("### 🧁 AMP Category Distribution")
-
 category_counts = filtered_df['Predicted Category'].value_counts()
 fig2, ax2 = plt.subplots()
-colors = ['#f44336', '#ff9800', '#4caf50']  # red, orange, green
+colors = ['#f44336', '#ff9800', '#4caf50']
 
 ax2.pie(
     category_counts,
@@ -128,16 +132,17 @@ if not filtered_df.empty:
     mod_count = (filtered_df['Predicted Category'] == 'Moderate AMP').sum()
     low_count = (filtered_df['Predicted Category'] == 'Low AMP').sum()
 
-    st.markdown(f\"\"\"
+    st.markdown(f"""
     - 🥇 **Best Performing Plant**: `{best_plant}`
     - 📊 **Average AMP Score**: `{avg_score}`
     - 🧬 **High AMP**: {high_count} plant(s)  
     - 🌿 **Moderate AMP**: {mod_count} plant(s)  
     - 🌫️ **Low AMP**: {low_count} plant(s)
-    \"\"\")
+    """)
 else:
-    st.info(\"No data available for summary.\")
+    st.info("No data available for summary.")
 
+# --- DOWNLOAD BUTTON ---
 st.markdown("### ⬇️ Download Filtered Data")
 csv = filtered_df.to_csv(index=False).encode('utf-8')
 
