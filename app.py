@@ -162,3 +162,4 @@ function printPage() {
 <button onclick="printPage()">Print / Save as PDF</button>"""
 
 components.html(js)
+st.write(" " * 500)  # Creates empty space to force page expansion
