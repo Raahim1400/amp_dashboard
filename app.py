@@ -1,4 +1,10 @@
 import streamlit as st
+st.set_page_config(
+    page_title="AMP Dashboard",
+    layout="wide",  # This makes app full width
+    initial_sidebar_state="expanded",
+)
+
 import pandas as pd
 import matplotlib.pyplot as plt
 
