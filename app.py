@@ -144,60 +144,15 @@ if not filtered_df.empty:
 else:
     st.info("No data available for summary.")
 
-# --- DOWNLOAD BUTTON ---
-st.markdown("### ⬇️ Download Filtered Data")
-csv = filtered_df.to_csv(index=False).encode('utf-8')
+import streamlit.components.v1 as components
 
-st.download_button(
-    label="Download CSV",
-    data=csv,
-    file_name='filtered_amp_data.csv',
-    mime='text/csv',
-    help="Click to download the current table as CSV"
-)
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
-from datetime import datetime
+st.markdown("## 🖨️ Save Full Report as PDF")
 
-def create_pdf(dataframe):
-    file_path = "amp_report.pdf"
-    c = canvas.Canvas(file_path, pagesize=letter)
-    width, height = letter
+js = """<script>
+function printPage() {
+    window.print();
+}
+</script>
+<button onclick="printPage()">Print / Save as PDF</button>"""
 
-    # Title
-    c.setFont("Helvetica-Bold", 16)
-    c.drawString(50, height - 50, "AMP Score Summary Report")
-
-    # Date
-    c.setFont("Helvetica", 10)
-    c.drawString(50, height - 70, f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-
-    # Table
-    y = height - 110
-    c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, y, "Plant     AMP Score     Category")
-    y -= 20
-
-    c.setFont("Helvetica", 10)
-    for index, row in dataframe.iterrows():
-        line = f"{row['Plant']}        {row['AMP Score']}            {row['Predicted Category']}"
-        c.drawString(50, y, line)
-        y -= 15
-        if y < 50:
-            c.showPage()
-            y = height - 50
-
-    c.save()
-    return file_path
-
-# Add PDF download button
-if not filtered_df.empty:
-    if st.button("📄 Generate PDF Report"):
-        pdf_path = create_pdf(filtered_df)
-        with open(pdf_path, "rb") as f:
-            st.download_button(
-                label="⬇️ Download AMP Report (PDF)",
-                data=f,
-                file_name="AMP_Report.pdf",
-                mime="application/pdf"
-            )
+components.html(js)
