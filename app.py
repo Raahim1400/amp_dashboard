@@ -114,15 +114,6 @@ st.markdown("""
     sum(df['AMP Category'] == 'Low Potential')
 ), unsafe_allow_html=True)
 
-# --- Export to PDF Button ---
-st.markdown("## Export Dashboard as PDF")
-js = """<script>
-function printPage() {
-    window.print();
-}
-</script>
-<button onclick="printPage()">Print / Save as PDF</button>"""
-components.html(js)
 
 # --- Footer ---
 st.markdown("""
