@@ -122,3 +122,24 @@ st.markdown("""
         Made by Raahim | Project: AMP Screening Dashboard | 2025
     </div>
 """, unsafe_allow_html=True)
+# --- 🔍 AMP ↔ Disease Mapping ---
+st.subheader("🧬 AMP ↔ Disease Mapping")
+
+try:
+    df_disease = pd.read_csv("data/amp_disease_links.csv")
+    st.dataframe(df_disease, use_container_width=True)
+except FileNotFoundError:
+    st.error("Disease dataset not found. Please add 'amp_disease_links.csv' in the data folder.")
+
+# --- 🔎 Search by Disease ---
+st.markdown("### 🔎 Find Effective AMPs for a Disease")
+disease_query = st.text_input("Enter disease name (e.g. Pneumonia, MRSA, Candidiasis):")
+
+if disease_query:
+    results = df_disease[df_disease['Target Disease'].str.contains(disease_query, case=False, na=False)]
+    
+    if not results.empty:
+        st.success(f"Found {len(results)} AMP(s) for '{disease_query}':")
+        st.table(results[['AMP Name', 'Source Plant', 'Target Gene/Protein', 'Confidence Score']])
+    else:
+        st.warning("No AMP found for this disease.")
