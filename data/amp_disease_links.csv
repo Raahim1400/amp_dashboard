@@ -1,1 +1,7 @@
+AMP Name,Source Plant,Target Disease,Target Gene/Protein,Confidence Score
+Defensin-A,Garlic,MRSA Infection,mecA,0.89
+Nisin,Tulsi,Dental Plaque,gtfB,0.78
+Dermcidin,Neem,Skin Infection,IL6,0.84
+Magainin,Moringa,Fungal Candidiasis,ERG11,0.91
+LL-37,Aloe Vera,Pneumonia (P. aeruginosa),lasB,0.87
 
