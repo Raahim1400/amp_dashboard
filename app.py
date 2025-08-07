@@ -143,3 +143,29 @@ if disease_query:
         st.table(results[['AMP Name', 'Source Plant', 'Target Gene/Protein', 'Confidence Score']])
     else:
         st.warning("No AMP found for this disease.")
+import pickle
+
+@st.cache_data
+def load_model():
+    with open("model/amp_model.pkl", "rb") as f:
+        model = pickle.load(f)
+    return model
+
+def predict_disease(amp_name):
+    model = load_model()
+    return model.predict([[amp_name]])[0]
+st.header("🧪 Disease Predictor (Mock)")
+
+# AMP name input from user
+amp_name = st.text_input("Enter AMP Name (e.g., AMP_1):")
+
+# When user clicks 'Predict' button
+if st.button("Predict Disease"):
+    if amp_name:
+        try:
+            predicted_disease = predict_disease(amp_name)
+            st.success(f"🧬 Predicted Disease: **{predicted_disease}**")
+        except Exception as e:
+            st.error("❌ Prediction failed. Error: " + str(e))
+    else:
+        st.warning("⚠️ Please enter an AMP name.")
