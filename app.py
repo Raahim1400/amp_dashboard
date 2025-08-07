@@ -132,29 +132,6 @@ if disease_query:
     else:
         st.warning("No AMP found for this disease.")
 
-# --- Load Model ---
-@st.cache_data
-def load_model():
-    with open("model/amp_model.pkl", "rb") as f:
-        return pickle.load(f)
-
-def predict_disease(amp_name):
-    model = load_model()
-    return model.predict([[amp_name]])[0]
-
-# --- Disease Predictor ---
-st.header("🧪 Disease Predictor (Mock)")
-amp_name = st.text_input("Enter AMP Name (e.g., AMP_1):")
-if st.button("Predict Disease"):
-    if amp_name:
-        try:
-            predicted_disease = predict_disease(amp_name)
-            st.success(f"🧬 Predicted Disease: **{predicted_disease}**")
-        except Exception as e:
-            st.error("❌ Prediction failed. Error: " + str(e))
-    else:
-        st.warning("⚠️ Please enter an AMP name.")
-
 # --- Footer ---
 st.markdown("""
     <hr>
