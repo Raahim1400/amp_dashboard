@@ -111,6 +111,17 @@ if selected_diseases and not df_disease.empty:
     amps_linked = df_disease[df_disease["Target Disease"].isin(selected_diseases)]["AMP Name"].unique()
     filtered_df = filtered_df[filtered_df["AMP Name"].isin(amps_linked)] if "AMP Name" in filtered_df else filtered_df
 
+# --- Category Prediction (moved up before metrics) ---
+def predict_amp_category(score):
+    if score >= 85:
+        return "High Potential"
+    elif score >= 70:
+        return "Moderate Potential"
+    else:
+        return "Low Potential"
+
+filtered_df['AMP Category'] = filtered_df['AMP Score'].apply(predict_amp_category)
+
 # --- KPI Metrics ---
 col1, col2, col3 = st.columns(3)
 col1.metric("Total Plants Tested", len(filtered_df))
@@ -141,17 +152,7 @@ with col_b:
     ax2.axis('equal')
     st.pyplot(fig2)
 
-# --- Category Prediction ---
-def predict_amp_category(score):
-    if score >= 85:
-        return "High Potential"
-    elif score >= 70:
-        return "Moderate Potential"
-    else:
-        return "Low Potential"
-
-filtered_df['AMP Category'] = filtered_df['AMP Score'].apply(predict_amp_category)
-
+# --- AI-Based AMP Category Prediction Table ---
 st.subheader("🔍 AI-Based AMP Category Prediction")
 st.dataframe(filtered_df[['Plant', 'AMP Score', 'AMP Category']], use_container_width=True)
 
