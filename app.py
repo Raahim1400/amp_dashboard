@@ -1,65 +1,44 @@
-import os
-import pickle
-import pandas as pd
 import streamlit as st
+import pandas as pd
+import pickle
 
-# --- Page Config ---
-st.set_page_config(
-    page_title="PhytoAMP_Finder - Disease Prediction",
-    page_icon="🧬",
-    layout="wide"
-)
-
-# --- Title ---
-st.title("🧬 PhytoAMP_Finder: Disease-Specific AMP Prediction")
-
-# --- Load Disease Prediction Model ---
-def load_model(model_file):
-    if os.path.exists(model_file):
-        with open(model_file, "rb") as f:
-            return pickle.load(f)
-    else:
-        return None
-
-model_path = "disease_model.pkl"
-model = load_model(model_path)
-
-if model:
-    st.success("✅ Model loaded successfully.")
-else:
-    st.error("❌ Disease model not found. Please ensure 'disease_model.pkl' exists in the app directory.")
+# Load the trained model
+try:
+    with open("model.pkl", "rb") as file:
+        model = pickle.load(file)
+except FileNotFoundError:
+    st.error("Model file not found. Please make sure 'model.pkl' is in the same directory.")
     st.stop()
 
-# --- File Upload ---
-uploaded_file = st.file_uploader("Upload AMP Data (CSV)", type=["csv"])
+# Streamlit app title
+st.title("AMP Prediction App")
+
+# File uploader
+uploaded_file = st.file_uploader("Upload a CSV file for prediction", type="csv")
 
 if uploaded_file is not None:
     try:
-        df = pd.read_csv(uploaded_file)
-        st.write("### 📄 Uploaded Data", df.head())
+        data = pd.read_csv(uploaded_file)
+        st.write("Uploaded Data:", data.head())
 
-        # Ensure required columns exist
-        required_cols = ["AMP_score", "Hydrophobicity", "Charge", "Length"]
-        missing_cols = [col for col in required_cols if col not in df.columns]
-
-        if missing_cols:
-            st.error(f"❌ Missing required columns: {missing_cols}")
+        # Check if the required features are present
+        required_features = model.feature_names_in_
+        if not all(feature in data.columns for feature in required_features):
+            st.error(f"The uploaded CSV must contain these columns: {list(required_features)}")
         else:
-            try:
-                predictions = model.predict(df[required_cols])
-                df["Predicted_Disease"] = predictions
-                st.write("### 🧪 Predictions", df.head())
+            # Make predictions
+            predictions = model.predict(data[required_features])
+            data['Prediction'] = predictions
+            st.write("Prediction Results:", data)
 
-                # Download Predictions
-                csv = df.to_csv(index=False)
-                st.download_button(
-                    label="⬇️ Download Predictions CSV",
-                    data=csv,
-                    file_name="amp_disease_predictions.csv",
-                    mime="text/csv"
-                )
-            except Exception as e:
-                st.error(f"⚠️ Prediction failed: {e}")
+            # Download link for results
+            csv = data.to_csv(index=False)
+            st.download_button(
+                label="Download Predictions as CSV",
+                data=csv,
+                file_name='predictions.csv',
+                mime='text/csv'
+            )
     except Exception as e:
-        st.error(f"⚠️ Failed to read CSV file: {e}")
+        st.error(f"An error occurred while processing the file: {e}")
 
