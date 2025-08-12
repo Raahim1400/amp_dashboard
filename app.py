@@ -29,10 +29,22 @@ st.markdown("""
             border-radius: 10px;
             border: 1px solid #00BFFF;
             padding: 0.5em 1em;
+            transition: 0.3s;
+        }
+        .stButton > button:hover {
+            background-color: #00BFFF;
+            color: black;
         }
         .stDataFrame, .stTable {
             background-color: #1f1f2e;
             border-radius: 10px;
+        }
+        .metric-card {
+            padding: 1rem;
+            background-color: #1f1f2e;
+            border-radius: 15px;
+            text-align: center;
+            margin: 0.5rem;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -99,25 +111,35 @@ if selected_diseases and not df_disease.empty:
     amps_linked = df_disease[df_disease["Target Disease"].isin(selected_diseases)]["AMP Name"].unique()
     filtered_df = filtered_df[filtered_df["AMP Name"].isin(amps_linked)] if "AMP Name" in filtered_df else filtered_df
 
+# --- KPI Metrics ---
+col1, col2, col3 = st.columns(3)
+col1.metric("Total Plants Tested", len(filtered_df))
+col2.metric("High Potential AMPs", sum(filtered_df['AMP Category'] == 'High Potential'))
+col3.metric("Moderate Potential AMPs", sum(filtered_df['AMP Category'] == 'Moderate Potential'))
+
 # --- Display AMP Score Table ---
 st.subheader(f"AMP Score Table — {len(filtered_df)} Records")
 st.dataframe(filtered_df, use_container_width=True)
 
-# --- Bar Chart ---
-st.subheader("📈 AMP Score per Plant")
-fig1, ax1 = plt.subplots()
-ax1.bar(filtered_df['Plant'], filtered_df['AMP Score'], color='#FF4B4B')
-ax1.set_xlabel("Plant")
-ax1.set_ylabel("AMP Score")
-ax1.set_title("AMP Score Comparisons")
-st.pyplot(fig1)
+# --- Charts ---
+col_a, col_b = st.columns(2)
 
-# --- Pie Chart ---
-st.subheader("🍩 AMP Score Distribution")
-fig2, ax2 = plt.subplots()
-ax2.pie(filtered_df['AMP Score'], labels=filtered_df['Plant'], autopct='%1.1f%%', startangle=140)
-ax2.axis('equal')
-st.pyplot(fig2)
+with col_a:
+    st.subheader("📈 AMP Score per Plant")
+    fig1, ax1 = plt.subplots()
+    ax1.bar(filtered_df['Plant'], filtered_df['AMP Score'], color='#FF4B4B')
+    ax1.set_xlabel("Plant")
+    ax1.set_ylabel("AMP Score")
+    ax1.set_title("AMP Score Comparisons")
+    plt.xticks(rotation=45)
+    st.pyplot(fig1)
+
+with col_b:
+    st.subheader("🍩 AMP Score Distribution")
+    fig2, ax2 = plt.subplots()
+    ax2.pie(filtered_df['AMP Score'], labels=filtered_df['Plant'], autopct='%1.1f%%', startangle=140)
+    ax2.axis('equal')
+    st.pyplot(fig2)
 
 # --- Category Prediction ---
 def predict_amp_category(score):
@@ -141,23 +163,6 @@ for category in filtered_df['AMP Category'].unique():
     b64 = base64.b64encode(csv.encode()).decode()
     href = f'<a href="data:file/csv;base64,{b64}" download="{category}_AMPs.csv">Download {category} AMPs</a>'
     st.markdown(href, unsafe_allow_html=True)
-
-# --- Summary ---
-st.markdown("""
-    <hr>
-    <div style='text-align: center; font-size: 18px; color: #FFFFFF;'>
-        <p><strong>Summary:</strong><br>
-        Total Plants Tested: <span style='color: #00BFFF;'>{}</span><br>
-        High Potential AMPs: <span style='color: #00FF00;'>{}</span><br>
-        Moderate Potential AMPs: <span style='color: #FFA500;'>{}</span><br>
-        Low Potential AMPs: <span style='color: #FF4B4B;'>{}</span></p>
-    </div>
-""".format(
-    len(filtered_df),
-    sum(filtered_df['AMP Category'] == 'High Potential'),
-    sum(filtered_df['AMP Category'] == 'Moderate Potential'),
-    sum(filtered_df['AMP Category'] == 'Low Potential')
-), unsafe_allow_html=True)
 
 # --- AMP ↔ Disease Mapping ---
 st.subheader("🧬 AMP ↔ Disease Mapping")
