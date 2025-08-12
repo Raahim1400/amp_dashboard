@@ -1,81 +1,65 @@
-import streamlit as st
-import pandas as pd
-import matplotlib.pyplot as plt
-import base64
+import os
 import pickle
-from sklearn.ensemble import RandomForestClassifier
+import pandas as pd
+import streamlit as st
 
 # --- Page Config ---
 st.set_page_config(
-    page_title="PhytoAMP_Finder",
+    page_title="PhytoAMP_Finder - Disease Prediction",
     page_icon="🧬",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    layout="wide"
 )
 
-# --- Load and Train AI Model (Step 3) ---
-@st.cache_data
-def load_data():
-    df = pd.read_csv("data/amp_scores.csv")
-    return df
+# --- Title ---
+st.title("🧬 PhytoAMP_Finder: Disease-Specific AMP Prediction")
 
-@st.cache_resource
-def train_model(df):
-    # Assume df has columns: 'AMP_Score', 'Length', 'Charge', 'Category'
-    X = df[['AMP_Score', 'Length', 'Charge']]
-    y = df['Category']
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# --- Load Disease Prediction Model ---
+def load_model(model_file):
+    if os.path.exists(model_file):
+        with open(model_file, "rb") as f:
+            return pickle.load(f)
+    else:
+        return None
 
-    model = RandomForestClassifier(random_state=42)
-    model.fit(X_train, y_train)
-    accuracy = model.score(X_test, y_test)
-    return model, accuracy
+model_path = "disease_model.pkl"
+model = load_model(model_path)
 
-df = load_data()
-model, accuracy = train_model(df)
-
-# --- Sidebar ---
-st.sidebar.header("🔍 Filter Options")
-selected_categories = st.sidebar.multiselect("Select AMP Category", df['Category'].unique())
-
-if selected_categories:
-    df_filtered = df[df['Category'].isin(selected_categories)]
+if model:
+    st.success("✅ Model loaded successfully.")
 else:
-    df_filtered = df
+    st.error("❌ Disease model not found. Please ensure 'disease_model.pkl' exists in the app directory.")
+    st.stop()
 
-# --- Main Title ---
-st.title("🧬 PhytoAMP_Finder")
-st.markdown("### AI-Powered Antimicrobial Peptide Analysis from Medicinal Plants")
-st.info(f"**Model Accuracy:** {accuracy*100:.2f}%")
-
-# --- Display Data ---
-st.subheader("📊 Dataset Overview")
-st.dataframe(df_filtered)
-
-# --- File Upload + Predictions ---
-st.subheader("📂 Upload Your Data for AI Predictions")
-uploaded_file = st.file_uploader("Upload CSV File", type=["csv"])
+# --- File Upload ---
+uploaded_file = st.file_uploader("Upload AMP Data (CSV)", type=["csv"])
 
 if uploaded_file is not None:
-    user_df = pd.read_csv(uploaded_file)
     try:
-        predictions = model.predict(user_df[['AMP_Score', 'Length', 'Charge']])
-        user_df['Predicted_Category'] = predictions
-        st.success("✅ Predictions completed successfully!")
-        st.dataframe(user_df)
+        df = pd.read_csv(uploaded_file)
+        st.write("### 📄 Uploaded Data", df.head())
 
-        # Download Button
-        csv = user_df.to_csv(index=False)
-        b64 = base64.b64encode(csv.encode()).decode()
-        st.markdown(f'<a href="data:file/csv;base64,{b64}" download="predictions.csv">📥 Download Predictions</a>', unsafe_allow_html=True)
+        # Ensure required columns exist
+        required_cols = ["AMP_score", "Hydrophobicity", "Charge", "Length"]
+        missing_cols = [col for col in required_cols if col not in df.columns]
 
+        if missing_cols:
+            st.error(f"❌ Missing required columns: {missing_cols}")
+        else:
+            try:
+                predictions = model.predict(df[required_cols])
+                df["Predicted_Disease"] = predictions
+                st.write("### 🧪 Predictions", df.head())
+
+                # Download Predictions
+                csv = df.to_csv(index=False)
+                st.download_button(
+                    label="⬇️ Download Predictions CSV",
+                    data=csv,
+                    file_name="amp_disease_predictions.csv",
+                    mime="text/csv"
+                )
+            except Exception as e:
+                st.error(f"⚠️ Prediction failed: {e}")
     except Exception as e:
-        st.error(f"Error in prediction: {e}")
-
-# --- Graph ---
-st.subheader("📈 AMP Score Distribution")
-fig, ax = plt.subplots()
-df_filtered['AMP_Score'].hist(ax=ax, bins=20)
-ax.set_title("AMP Score Distribution")
-st.pyplot(fig)
+        st.error(f"⚠️ Failed to read CSV file: {e}")
 
